@@ -49,8 +49,6 @@ class GPS():
             if parts[2] == b'V':
                 print("GPS receiver warning")
             else:
-                print(f"{parts[5]} - {parts[6]}")
-                print(f"{parts[3]} - {parts[4]}")
                 longitude = self.formatDegreesMinutes(parts[5], parts[6])
                 latitude = self.formatDegreesMinutes(parts[3], parts[4])
                 self.coords = [str(latitude), str(longitude)]
