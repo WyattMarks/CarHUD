@@ -27,7 +27,7 @@ class GPS():
         parts = coordinates.split(b'.')
 
         if (len(parts) != 2):
-            return coordinates
+            raise Exception(f"Argument {coordinates} is not in DDMM.MMMMM")
         
         left = parts[0]
         right = parts[1]
@@ -40,10 +40,11 @@ class GPS():
         if (cardinal == b'S' or cardinal == b'W'):
             final = -final
 
-        return str(final)
+        return final
 
     def ProcessLine(self, data):
         message = data[0:6]
+        # See http://aprs.gids.nl/nmea/#rmc for more information
         if (message == b'$GPRMC'): #GPRMC = Recommended minimum specific GPS/Transit data
             parts = data.split(b',')
             if parts[2] == b'V':
@@ -51,7 +52,7 @@ class GPS():
             else:
                 longitude = self.formatDegreesMinutes(parts[5], parts[6])
                 latitude = self.formatDegreesMinutes(parts[3], parts[4])
-                self.coords = [str(latitude), str(longitude)]
+                self.coords = [latitude, longitude]
         else:
             # Ignore any other data, idk what it is anyway
             pass

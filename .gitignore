@@ -1,0 +1,2 @@
+*.pyc
+./HUD/sensors/__pycache__/*
