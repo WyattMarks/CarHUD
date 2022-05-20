@@ -13,9 +13,9 @@ class GPS():
         self.coords = None
 
         for port, desc, hwid in sorted(ports):
-                if "GPS/GNSS" in desc:
-                    self.port = port
-                    break
+            if "GPS/GNSS" in desc:
+                self.port = port
+                break
         
         if self.port == None:
             raise Exception("GPS Not Found")
