@@ -5,12 +5,15 @@ import pygame
 import os
 from time import sleep
 
+ON_PI = True
+
 class HUD():
 
     def __init__(self):
+        os.environ["DISPLAY"] = ":0"
         pygame.init()
         self.largeFont = pygame.font.Font(None, 100)
-        self.lcd = pygame.display.set_mode((1024, 600))
+        self.lcd = pygame.display.set_mode((1024, 600), pygame.FULLSCREEN if ON_PI else 0)
         self.lcd.fill((0,0,0))
         pygame.display.update()
         pygame.mouse.set_visible(False)
@@ -26,12 +29,20 @@ class HUD():
     def DrawTextCentered(self, text, font, center, color=pygame.Color(255,255,255)):
         text_surface = font.render(text, True, color)
         rect = text_surface.get_rect(center=center)
-        self.lcd.blit(text_surface, rect)
+        if ON_PI:
+            flipped = pygame.transform.flip(text_surface, True, False)
+            self.lcd.blit(flipped, rect)
+        else:
+            self.lcd.blit(text_surface, rect)
     
     def DrawTextLeft(self, text, font, topleft, color=pygame.Color(255,255,255)):
         text_surface = font.render(text, True, color)
         rect = text_surface.get_rect(topleft=topleft)
-        self.lcd.blit(text_surface, rect)
+        if ON_PI:
+            flipped = pygame.transform.flip(text_surface, True, False)
+            self.lcd.blit(flipped, rect)
+        else:
+            self.lcd.blit(text_surface, rect)
         
 
     def main(self):
