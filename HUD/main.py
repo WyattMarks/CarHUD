@@ -1,72 +1,100 @@
-from sensors.gps import GPS
-from sensors.obd2 import OBD2
-from sensors.board import SensorBoard
 import pygame
 import os
 from time import sleep
+import random
+from gauge import Gauge
 
-ON_PI = True
+ON_PI = False
+IN_CAR = False
 
 class HUD():
 
     def __init__(self):
+        self.time = 0
         os.environ["DISPLAY"] = ":0"
+        if IN_CAR:
+                x = True
+                while x:
+                        try:
+                                self.obd = OBD2()
+                                print(self.obd.GetSpeed())
+                                x = False
+                        except:
+                                sleep(random.randrange(0, 5))
         pygame.init()
-        self.largeFont = pygame.font.Font(None, 100)
-        self.lcd = pygame.display.set_mode((1024, 600), pygame.FULLSCREEN if ON_PI else 0)
+        self.largeFont = pygame.font.Font(None, 60)
+        self.smallFont = pygame.font.Font(None, 40)
+        self.lcd = pygame.display.set_mode((1024, 600), 0)#pygame.FULLSCREEN)
         self.lcd.fill((0,0,0))
         pygame.display.update()
         pygame.mouse.set_visible(False)
-        self.gps = GPS()
-        #self.obd = OBD2()
-        self.sensorBoard = SensorBoard()
+        #self.gps = GPS()
+        #self.sensorBoard = SensorBoard()
+        self.fuelgauge = Gauge(self.lcd, self.smallFont, 910, 485, 10, 50, pygame.Color(0,0,0))
 
     def GetTextWidth(self, text, font):
-        text_surface = font.render(text, True, color)
+        text_surface = font.render(text, True, pygame.Color(0,0,0))
         rect = text_surface.get_rect()
         return rect.x
 
     def DrawTextCentered(self, text, font, center, color=pygame.Color(255,255,255)):
         text_surface = font.render(text, True, color)
         rect = text_surface.get_rect(center=center)
-        if ON_PI:
-            flipped = pygame.transform.flip(text_surface, True, False)
-            self.lcd.blit(flipped, rect)
-        else:
-            self.lcd.blit(text_surface, rect)
+        self.lcd.blit(text_surface, rect)
     
     def DrawTextLeft(self, text, font, topleft, color=pygame.Color(255,255,255)):
         text_surface = font.render(text, True, color)
         rect = text_surface.get_rect(topleft=topleft)
-        if ON_PI:
-            flipped = pygame.transform.flip(text_surface, True, False)
-            self.lcd.blit(flipped, rect)
-        else:
-            self.lcd.blit(text_surface, rect)
-        
+        self.lcd.blit(text_surface, rect)
 
     def main(self):
         while True:
             self.lcd.fill((0,0,0))
-
-            coords = self.gps.GetCoords()
-            if coords != None:
-                self.DrawTextCentered(f"Lat: {coords[0]:.5f}, Lon: {coords[1]:.5f}", self.largeFont, (1024/2, 600/3))
             
-            speed = 0#self.obd.GetSpeed()
+            speed = 30#self.obd.GetSpeed()
             if speed != None:
                 self.DrawTextCentered(f"{speed}mph", self.largeFont, (1024/2, 500))
 
-            brightness = self.sensorBoard.GetBrightness()
-            if brightness > 2500:
-                self.DrawTextLeft(f"BRIGHT!", self.largeFont, (0, 50))
-            elif brightness > 2000:
-                self.DrawTextLeft(f"Reasonable!", self.largeFont, (0, 50))
-            else:
-                self.DrawTextLeft(f"Dark!", self.largeFont, (0, 50))
 
+            # fuel data
+            fuelPressure = 0
+            self.DrawTextLeft(f"Fuel Pressure: {fuelPressure} kilopascal", self.largeFont, (0, 50))
+
+            fuelLevel = 50
+            self.fuelgauge.draw(fuelLevel)
+            self.DrawTextLeft(f"Fuel Level", self.largeFont, (800, 500))
+
+            fuelRate = 0
+            self.DrawTextLeft(f"Fuel Rate: {fuelRate} liters/hour", self.largeFont, (0, 150)) # convert units?
+
+            # engine data
+            coolantTemp = 0 
+            self.DrawTextLeft(f"Coolant Temp: {coolantTemp} degrees", self.largeFont, (0, 250)) # default value in degrees celcius (convert?)
+          
+            engineLoad = 0
+            self.DrawTextLeft(f"Engine Load: {engineLoad}%", self.largeFont, (0, 200))
+
+            engineRPM = 0
+            self.DrawTextLeft(f"RPM: {engineRPM}%", self.largeFont, (0, 300))
+
+            engineRunTime = 0
+            self.DrawTextLeft(f"Engine Time: {engineRunTime}%", self.largeFont, (0, 350))
+
+            # temperatures
+            ambientTemp = 30#self.obd.GetAmbientTemp()
+            self.DrawTextLeft(f"Car Temp: {ambientTemp} degrees", self.largeFont, (0, 400)) # default value in degrees celcius (convert?)
+
+            # odometer data
+            distanceTraveled = 0
+            self.DrawTextLeft(f"Distance: {distanceTraveled} km", self.largeFont, (0, 450)) # convert units?
+
+            self.DrawTextLeft("OFF SCREEN", self.largeFont, (1024, 250))
+            
+            if ON_PI:
+              self.lcd.blit(pygame.transform.flip(self.lcd, True, False), (0,0))
             pygame.display.update()
             sleep(1)
+
 
 
 
