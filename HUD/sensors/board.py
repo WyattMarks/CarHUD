@@ -17,7 +17,6 @@ class SensorBoard():
         line = self.serial.readline()
         while self.serial.in_waiting > 0:
             line = self.serial.readline()
-            print(f"\t{line}")
 
         if len(line) > 0:
             try:
@@ -26,6 +25,20 @@ class SensorBoard():
                 pass
 
         return self.brightness
+
+    def GetTemperature(self):
+        self.serial.write(b"temp\n")
+        line = self.serial.readline()
+        while self.serial.in_waiting > 0:
+            line = self.serial.readline()
+
+        if len(line) > 0:
+            try:
+                self.temp = int(line) / 100
+            except:
+                pass
+
+        return self.temp
 
 
 
@@ -39,5 +52,6 @@ class SensorBoard():
 if __name__ == "__main__":
     board = SensorBoard()
     while True:
-        print(board.GetBrightness())
+        print(f"bright: {board.GetBrightness()}")
+        print(f"temp: {board.GetTemperature()}")
         sleep(1)
